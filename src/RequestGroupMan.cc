@@ -43,6 +43,7 @@
 #include <utility>
 
 #include "BtProgressInfoFile.h"
+#include "DefaultBtProgressInfoFile.h"
 #include "RecoverableException.h"
 #include "RequestGroup.h"
 #include "LogFactory.h"
@@ -235,6 +236,11 @@ size_t RequestGroupMan::changeReservedGroupPosition(a2_gid_t gid, int pos,
 bool RequestGroupMan::removeReservedGroup(a2_gid_t gid)
 {
   return reservedGroups_.remove(gid);
+}
+
+void RequestGroupMan::markRemoveFiles(a2_gid_t gid)
+{
+  removeFileGids_.insert(gid);
 }
 
 namespace {
@@ -909,8 +915,37 @@ RequestGroupMan::findDownloadResult(a2_gid_t gid) const
   return downloadResults_.get(gid);
 }
 
-bool RequestGroupMan::removeDownloadResult(a2_gid_t gid)
+namespace {
+bool removeFilesForEntries(
+    const std::vector<std::shared_ptr<FileEntry>>& fileEntries)
 {
+  bool removed = false;
+  for (const auto& entry : fileEntries) {
+    if (!entry) {
+      continue;
+    }
+    File f(entry->getPath());
+    if (f.remove()) {
+      removed = true;
+    }
+    File ctrl(entry->getPath() + DefaultBtProgressInfoFile::getSuffix());
+    if (ctrl.remove()) {
+      removed = true;
+    }
+  }
+  return removed;
+}
+} // namespace
+
+bool RequestGroupMan::removeDownloadResult(a2_gid_t gid, bool removeFiles)
+{
+  auto dr = findDownloadResult(gid);
+  if (!dr) {
+    return false;
+  }
+  if (removeFiles || removeFileGids_.erase(gid) > 0) {
+    removeFilesForEntries(dr->fileEntries);
+  }
   return downloadResults_.remove(gid);
 }
 
@@ -920,6 +955,11 @@ void RequestGroupMan::addDownloadResult(
   ++numStoppedTotal_;
   bool rv = downloadResults_.push_back(dr->gid->getNumericId(), dr);
   assert(rv);
+  if (removeFileGids_.erase(dr->gid->getNumericId()) > 0) {
+    removeFilesForEntries(dr->fileEntries);
+    downloadResults_.remove(dr->gid->getNumericId());
+    return;
+  }
   while (downloadResults_.size() > maxDownloadResult_) {
     // Save last encountered error code so that we can report it
     // later.

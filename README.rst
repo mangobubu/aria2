@@ -9,7 +9,8 @@ You must use this program at your own risk.
 Introduction
 ------------
 
-aria2 is a utility for downloading files. The supported protocols are
+This fork is based on the upstream aria2 source code and extends the RPC
+interface. aria2 is a utility for downloading files. The supported protocols are
 HTTP(S), FTP, SFTP, BitTorrent, and Metalink. aria2 can download a
 file from multiple sources/protocols and tries to utilize your maximum
 download bandwidth. It supports downloading a file from
@@ -25,6 +26,28 @@ See the `aria2 Online Manual
 <https://aria2.github.io/manual/ru/html/>`_, `Portuguese
 translation <https://aria2.github.io/manual/pt/html/>`_) to learn
 how to use aria2.
+
+Custom RPC extension in this fork
+---------------------------------
+
+This fork adds an optional boolean parameter to the following JSON-RPC methods
+to allow deleting downloaded files when a task is removed:
+
+* ``aria2.remove(gid, removeFiles)`` and ``aria2.forceRemove(gid, removeFiles)``
+* ``aria2.removeDownloadResult(gid, removeFiles)``
+
+When ``removeFiles`` is ``true``, aria2 will attempt to delete downloaded files
+and related control files along with the task/result. When omitted or ``false``,
+the behavior matches upstream aria2 (only the task/result is removed).
+
+Example JSON-RPC request (remove task and delete files)::
+
+    {
+      "jsonrpc": "2.0",
+      "id": "example-remove",
+      "method": "aria2.remove",
+      "params": ["token:YOUR_SECRET", "2089b05ecca3d829", true]
+    }
 
 Features
 --------

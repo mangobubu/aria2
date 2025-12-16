@@ -42,6 +42,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <unordered_set>
 
 #include "DownloadResult.h"
 #include "TransferStat.h"
@@ -130,6 +131,9 @@ private:
   // SHA1 hash value of the content of last session serialization.
   std::string lastSessionHash_;
 
+  // Set of GIDs that requested file removal when task/result is removed.
+  std::unordered_set<a2_gid_t> removeFileGids_;
+
   void formatDownloadResultFull(
       OutputFile& out, const char* status,
       const std::shared_ptr<DownloadResult>& downloadResult) const;
@@ -207,6 +211,10 @@ public:
 
   bool removeReservedGroup(a2_gid_t gid);
 
+  // Marks that files of the given gid should be removed when the task/result
+  // is removed.
+  void markRemoveFiles(a2_gid_t gid);
+
   bool getOptimizeConcurrentDownloads() const
   {
     return optimizeConcurrentDownloads_;
@@ -259,9 +267,10 @@ public:
   // Removes all download results.
   void purgeDownloadResult();
 
-  // Removes download result of given gid. Returns true if download
-  // result was removed. Otherwise returns false.
-  bool removeDownloadResult(a2_gid_t gid);
+  // Removes download result of given gid. When removeFiles is true, also
+  // attempts to delete downloaded files. Returns true if download result was
+  // removed. Otherwise returns false.
+  bool removeDownloadResult(a2_gid_t gid, bool removeFiles = false);
 
   void addDownloadResult(const std::shared_ptr<DownloadResult>& downloadResult);
 
