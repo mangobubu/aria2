@@ -1,6 +1,8 @@
 aria2 - The ultra fast download utility
 =======================================
 
+**English** | `简体中文 <README.zh-CN.md>`_
+
 Disclaimer
 ----------
 This program comes with no warranty.
@@ -23,9 +25,11 @@ The project page is located at https://aria2.github.io/.
 
 See the `aria2 Online Manual
 <https://aria2.github.io/manual/en/html/>`_ (`Russian translation
-<https://aria2.github.io/manual/ru/html/>`_, `Portuguese
-translation <https://aria2.github.io/manual/pt/html/>`_) to learn
-how to use aria2.
+<https://aria2.github.io/manual/ru/html/>`_, `Portuguese translation
+<https://aria2.github.io/manual/pt/html/>`_). For a Chinese overview of
+this fork (including the RPC extension), read ``README.zh-CN.md`` in the
+repo root. A full zh online manual is not available because upstream
+``doc/manual-src`` only ships ``en``, ``ru``, and ``pt`` sources.
 
 Custom RPC extension in this fork
 ---------------------------------
