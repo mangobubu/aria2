@@ -36,4 +36,4 @@ make -j4
 # 可选：make check
 ```
 
-如需使用 RPC 扩展，请确保客户端按上述新增参数调用相应方法。原有调用方式保持兼容。*** End Patch``` warrants tool? need apply_patch tool not shell. Let's use apply_patch tool. વધુ. see patch likely good. Use apply_patch. 񢟵
+如需使用 RPC 扩展，请确保客户端按上述新增参数调用相应方法。原有调用方式保持兼容。
