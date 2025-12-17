@@ -410,6 +410,10 @@ std::unique_ptr<ValueBase> removeDownload(const RpcRequest& req,
     }
     else {
       if (group->isDependencyResolved()) {
+        if (removeFiles) {
+          e->getRequestGroupMan()->removeFilesForGroup(group);
+          e->getRequestGroupMan()->takeRemoveFilesMark(gid);
+        }
         e->getRequestGroupMan()->removeReservedGroup(gid);
       }
       else {

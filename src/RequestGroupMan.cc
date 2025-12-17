@@ -963,6 +963,15 @@ bool RequestGroupMan::removeDownloadResult(a2_gid_t gid, bool removeFiles)
   return downloadResults_.remove(gid);
 }
 
+bool RequestGroupMan::removeFilesForGroup(
+    const std::shared_ptr<RequestGroup>& group)
+{
+  if (!group) {
+    return false;
+  }
+  return removeFilesForEntries(group->getDownloadContext()->getFileEntries());
+}
+
 void RequestGroupMan::addDownloadResult(
     const std::shared_ptr<DownloadResult>& dr, bool removeFilesRequested)
 {

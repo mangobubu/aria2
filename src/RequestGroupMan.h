@@ -284,6 +284,9 @@ public:
     return unfinishedDownloadResults_;
   }
 
+  // Deletes files belonging to the given request group (data + control files).
+  bool removeFilesForGroup(const std::shared_ptr<RequestGroup>& group);
+
   std::shared_ptr<ServerStat> findServerStat(const std::string& hostname,
                                              const std::string& protocol) const;
 
