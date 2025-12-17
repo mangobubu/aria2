@@ -93,6 +93,9 @@
 namespace aria2 {
 
 namespace {
+bool removeFilesForEntries(
+    const std::vector<std::shared_ptr<FileEntry>>& fileEntries);
+
 template <typename InputIterator>
 void appendReservedGroup(RequestGroupList& list, InputIterator first,
                          InputIterator last)
@@ -243,6 +246,11 @@ void RequestGroupMan::markRemoveFiles(a2_gid_t gid)
   removeFileGids_.insert(gid);
 }
 
+bool RequestGroupMan::takeRemoveFilesMark(a2_gid_t gid)
+{
+  return removeFileGids_.erase(gid) > 0;
+}
+
 namespace {
 
 void notifyDownloadEvent(DownloadEvent event,
@@ -359,6 +367,8 @@ public:
       collectStat(group);
       const std::shared_ptr<DownloadContext>& dctx =
           group->getDownloadContext();
+      bool removeFilesRequested =
+          e_->getRequestGroupMan()->takeRemoveFilesMark(group->getGID());
 
       if (!group->isSeedOnlyEnabled()) {
         e_->getRequestGroupMan()->decreaseNumActive();
@@ -461,7 +471,11 @@ public:
       }
       else {
         std::shared_ptr<DownloadResult> dr = group->createDownloadResult();
-        e_->getRequestGroupMan()->addDownloadResult(dr);
+        if (removeFilesRequested) {
+          removeFilesForEntries(dr->fileEntries);
+        }
+        e_->getRequestGroupMan()->addDownloadResult(dr,
+                                                    removeFilesRequested);
         executeStopHook(group, e_->getOption(), dr->result);
         group->releaseRuntimeResource(e_);
       }
@@ -950,12 +964,13 @@ bool RequestGroupMan::removeDownloadResult(a2_gid_t gid, bool removeFiles)
 }
 
 void RequestGroupMan::addDownloadResult(
-    const std::shared_ptr<DownloadResult>& dr)
+    const std::shared_ptr<DownloadResult>& dr, bool removeFilesRequested)
 {
   ++numStoppedTotal_;
   bool rv = downloadResults_.push_back(dr->gid->getNumericId(), dr);
   assert(rv);
-  if (removeFileGids_.erase(dr->gid->getNumericId()) > 0) {
+  if (removeFilesRequested ||
+      removeFileGids_.erase(dr->gid->getNumericId()) > 0) {
     removeFilesForEntries(dr->fileEntries);
     downloadResults_.remove(dr->gid->getNumericId());
     return;

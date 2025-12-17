@@ -215,6 +215,9 @@ public:
   // is removed.
   void markRemoveFiles(a2_gid_t gid);
 
+  // Returns true if gid was marked for file removal and clears the mark.
+  bool takeRemoveFilesMark(a2_gid_t gid);
+
   bool getOptimizeConcurrentDownloads() const
   {
     return optimizeConcurrentDownloads_;
@@ -272,7 +275,8 @@ public:
   // removed. Otherwise returns false.
   bool removeDownloadResult(a2_gid_t gid, bool removeFiles = false);
 
-  void addDownloadResult(const std::shared_ptr<DownloadResult>& downloadResult);
+  void addDownloadResult(const std::shared_ptr<DownloadResult>& downloadResult,
+                         bool removeFilesRequested = false);
 
   const std::vector<std::shared_ptr<DownloadResult>>&
   getUnfinishedDownloadResult() const
